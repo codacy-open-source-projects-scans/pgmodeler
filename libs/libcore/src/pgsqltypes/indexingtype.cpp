@@ -18,10 +18,8 @@
 
 #include "indexingtype.h"
 
-QStringList IndexingType::type_names =
-{
+const QStringList IndexingType::type_names {
 	"", // Reserved for Class::Null
-
 	"btree",
 	"gist",
 	"hash",

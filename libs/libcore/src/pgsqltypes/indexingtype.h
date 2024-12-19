@@ -29,7 +29,7 @@
 
 class __libcore IndexingType: public TemplateType<IndexingType>{
 	private:
-		static QStringList type_names;
+		static const QStringList type_names;
 
 	public:
 		static constexpr unsigned Btree = 1,

@@ -328,11 +328,11 @@ class __libcore Relationship: public BaseRelationship {
 
 	public:
 		//! \brief String used as the name suffix separator. Default '_'
-		static const QString SuffixSeparator,
-		SrcTabToken, //{st}
-		DstTabToken, //{dt}
-		GenTabToken, //{gt}
-		SrcColToken; //{sc}
+		static const QString	SuffixSeparator,
+		SrcTabToken,
+		DstTabToken,
+		GenTabToken,
+		SrcColToken;
 
 		Relationship(Relationship *rel);
 

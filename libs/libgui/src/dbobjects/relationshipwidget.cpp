@@ -52,15 +52,15 @@ RelationshipWidget::RelationshipWidget(QWidget *parent): BaseObjectWidget(parent
 		patterns_hl[i]->loadConfiguration(GlobalAttributes::getPatternHighlightConfPath());
 	}
 
-	attributes_tab=new ObjectsTableWidget(ObjectsTableWidget::AllButtons ^
-										 (ObjectsTableWidget::UpdateButton |
-											ObjectsTableWidget::MoveButtons), true, this);
+	attributes_tab=new CustomTableWidget(CustomTableWidget::AllButtons ^
+										 (CustomTableWidget::UpdateButton |
+											CustomTableWidget::MoveButtons), true, this);
 
-	constraints_tab=new ObjectsTableWidget(ObjectsTableWidget::AllButtons  ^
-											(ObjectsTableWidget::UpdateButton |
-											 ObjectsTableWidget::MoveButtons), true, this);
+	constraints_tab=new CustomTableWidget(CustomTableWidget::AllButtons  ^
+											(CustomTableWidget::UpdateButton |
+											 CustomTableWidget::MoveButtons), true, this);
 
-	advanced_objs_tab=new ObjectsTableWidget(ObjectsTableWidget::EditButton, true, this);
+	advanced_objs_tab=new CustomTableWidget(CustomTableWidget::EditButton, true, this);
 
 	attributes_tab->setColumnCount(2);
 	attributes_tab->setHeaderLabel(tr("Attribute"), 0);
@@ -80,7 +80,7 @@ RelationshipWidget::RelationshipWidget(QWidget *parent): BaseObjectWidget(parent
 	advanced_objs_tab->setHeaderLabel(tr("Type"), 1);
 	advanced_objs_tab->setHeaderIcon(QPixmap(GuiUtilsNs::getIconPath("usertype")),1);
 
-	connect(advanced_objs_tab, &ObjectsTableWidget::s_rowEdited, this, &RelationshipWidget::showAdvancedObject);
+	connect(advanced_objs_tab, &CustomTableWidget::s_rowEdited, this, &RelationshipWidget::showAdvancedObject);
 
 	grid=new QGridLayout;
 	grid->addWidget(attributes_tab, 0,0,1,1);
@@ -157,17 +157,17 @@ RelationshipWidget::RelationshipWidget(QWidget *parent): BaseObjectWidget(parent
 																dynamic_cast<BaseRelationship *>(this->object)->getRelationshipType() != BaseRelationship::Relationship1n);
 	});
 
-	connect(attributes_tab, &ObjectsTableWidget::s_rowsRemoved, this, __slot(this, RelationshipWidget::removeObjects));
-	connect(attributes_tab, &ObjectsTableWidget::s_rowAdded, this, __slot(this, RelationshipWidget::addObject));
-	connect(attributes_tab, &ObjectsTableWidget::s_rowEdited, this, __slot_n(this, RelationshipWidget::editObject));
-	connect(attributes_tab, &ObjectsTableWidget::s_rowRemoved, this, __slot_n(this, RelationshipWidget::removeObject));
-	connect(attributes_tab, &ObjectsTableWidget::s_rowDuplicated, this, __slot_n(this, RelationshipWidget::duplicateObject));
+	connect(attributes_tab, &CustomTableWidget::s_rowsRemoved, this, __slot(this, RelationshipWidget::removeObjects));
+	connect(attributes_tab, &CustomTableWidget::s_rowAdded, this, __slot(this, RelationshipWidget::addObject));
+	connect(attributes_tab, &CustomTableWidget::s_rowEdited, this, __slot_n(this, RelationshipWidget::editObject));
+	connect(attributes_tab, &CustomTableWidget::s_rowRemoved, this, __slot_n(this, RelationshipWidget::removeObject));
+	connect(attributes_tab, &CustomTableWidget::s_rowDuplicated, this, __slot_n(this, RelationshipWidget::duplicateObject));
 
-	connect(constraints_tab, &ObjectsTableWidget::s_rowsRemoved, this, __slot(this, RelationshipWidget::removeObjects));
-	connect(constraints_tab, &ObjectsTableWidget::s_rowAdded, this, __slot(this, RelationshipWidget::addObject));
-	connect(constraints_tab, &ObjectsTableWidget::s_rowEdited, this, __slot_n(this, RelationshipWidget::editObject));
-	connect(constraints_tab, &ObjectsTableWidget::s_rowRemoved, this, __slot_n(this, RelationshipWidget::removeObject));
-	connect(constraints_tab, &ObjectsTableWidget::s_rowDuplicated, this, __slot_n(this, RelationshipWidget::duplicateObject));
+	connect(constraints_tab, &CustomTableWidget::s_rowsRemoved, this, __slot(this, RelationshipWidget::removeObjects));
+	connect(constraints_tab, &CustomTableWidget::s_rowAdded, this, __slot(this, RelationshipWidget::addObject));
+	connect(constraints_tab, &CustomTableWidget::s_rowEdited, this, __slot_n(this, RelationshipWidget::editObject));
+	connect(constraints_tab, &CustomTableWidget::s_rowRemoved, this, __slot_n(this, RelationshipWidget::removeObject));
+	connect(constraints_tab, &CustomTableWidget::s_rowDuplicated, this, __slot_n(this, RelationshipWidget::duplicateObject));
 
 	connect(defaults_rb, &QRadioButton::toggled, this, &RelationshipWidget::selectCopyOptions);
 	connect(including_rb, &QRadioButton::toggled, this, &RelationshipWidget::selectCopyOptions);
@@ -241,18 +241,18 @@ void RelationshipWidget::setAttributes(DatabaseModel *model, OperationList *op_l
 	{
 		if(base_rel->getRelationshipType()!=BaseRelationship::RelationshipFk)
 		{
-			ref_table_lbl->setText(tr("Referer View:"));
-			ref_table_txt->setToolTip(tr("<p>Referer view references one or more columns of a table to construct it's own columns.</p>"));
+			ref_table_lbl->setText(tr("Referrer view:"));
+			ref_table_txt->setToolTip(tr("<p>Referrer view references one or more columns of a table to construct it's own columns.</p>"));
 			recv_table_txt->setToolTip(tr("<p>Referenced table has its columns referenced by a view in order to construct the columns of this latter.</p>"));
 		}
 		else
 		{
-			ref_table_lbl->setText(tr("Referer Table:"));
-			ref_table_txt->setToolTip(tr("<p>Referer table references one or more columns of a table through foreign keys. This is the (n) side of relationship.</p>"));
+			ref_table_lbl->setText(tr("Referrer table:"));
+			ref_table_txt->setToolTip(tr("<p>Referrer table references one or more columns of a table through foreign keys. This is the (n) side of relationship.</p>"));
 			recv_table_txt->setToolTip(tr("<p>Referenced table has its columns referenced by a table's foreign key. This is the (1) side of relationship.</p>"));
 		}
 
-		recv_table_lbl->setText(tr("Referenced Table:"));
+		recv_table_lbl->setText(tr("Referenced table:"));
 
 		ref_table_txt->setPlainText(base_rel->getTable(BaseRelationship::SrcTable)->getName(true));
 		recv_table_txt->setPlainText(base_rel->getTable(BaseRelationship::DstTable)->getName(true));
@@ -261,10 +261,10 @@ void RelationshipWidget::setAttributes(DatabaseModel *model, OperationList *op_l
 	{
 		if(rel_type == BaseRelationship::RelationshipPart)
 		{
-			ref_table_lbl->setText(tr("Partitioned Table:"));
+			ref_table_lbl->setText(tr("Partitioned table:"));
 			ref_table_txt->setToolTip(tr("<p>Partitioned table is the one which is splitted into smaller pieces (partitions). This table is where the partitioning strategy or type is defined.</p>"));
 
-			recv_table_lbl->setText(tr("Partition Table:"));
+			recv_table_lbl->setText(tr("Partition table:"));
 			recv_table_txt->setToolTip(tr("<p>Partition table is the one attached to a partitioned table in which operations over data will be routed (according to the paritionig rule) when trying to handle the partitioned table.</p>"));
 
 			ref_table_txt->setPlainText(aux_rel->getReferenceTable()->getName(true));
@@ -272,10 +272,10 @@ void RelationshipWidget::setAttributes(DatabaseModel *model, OperationList *op_l
 		}
 		else if(rel_type!=BaseRelationship::RelationshipNn)
 		{
-			ref_table_lbl->setText(tr("Reference Table:"));
+			ref_table_lbl->setText(tr("Reference table:"));
 			ref_table_txt->setToolTip(tr("<p>Reference table has the columns from its primary key will copied to the receiver table in order to represent the linking between them. This is the (1) side of relationship.</p>"));
 
-			recv_table_lbl->setText(tr("Receiver Table:"));
+			recv_table_lbl->setText(tr("Receiver table:"));
 			recv_table_txt->setToolTip(tr("<p>Receiver (or referer) table will receive the generated columns and the foreign key in order to represent the linking between them. This is the (n) side of relationship.</p>"));
 
 			ref_table_txt->setPlainText(aux_rel->getReferenceTable()->getName(true));
@@ -283,7 +283,7 @@ void RelationshipWidget::setAttributes(DatabaseModel *model, OperationList *op_l
 		}
 		else
 		{
-			ref_table_lbl->setText(tr("Reference Table:"));
+			ref_table_lbl->setText(tr("Reference table:"));
 			ref_table_txt->setToolTip(tr("<p>In many-to-many relationships both tables are used as reference to generate the table that represents the linking. Columns from both tables are copied to the resultant table and two foreign keys are created as well in order to reference each participant table.</p>"));
 			recv_table_lbl->setText(tr("Reference Table:"));
 			recv_table_txt->setToolTip(ref_table_txt->toolTip());
@@ -302,8 +302,6 @@ void RelationshipWidget::setAttributes(DatabaseModel *model, OperationList *op_l
 	}
 
 	disable_sql_chk->setVisible(base_rel->getObjectType()==ObjectType::Relationship);
-	table1_mand_chk->setText(base_rel->getTable(BaseRelationship::SrcTable)->getName() + tr(" is required"));
-	table2_mand_chk->setText(base_rel->getTable(BaseRelationship::DstTable)->getName() + tr(" is required"));
 
 	if(aux_rel)
 	{
@@ -312,8 +310,8 @@ void RelationshipWidget::setAttributes(DatabaseModel *model, OperationList *op_l
 		table2_mand_chk->setChecked(aux_rel->isTableMandatory(BaseRelationship::DstTable));
 		identifier_chk->setChecked(aux_rel->isIdentifier());
 		relnn_tab_name_edt->setText(aux_rel->getTableNameRelNN());
-		attributes_tab->setButtonsEnabled(ObjectsTableWidget::AllButtons, !aux_rel->isProtected());
-		constraints_tab->setButtonsEnabled(ObjectsTableWidget::AllButtons, !aux_rel->isProtected());
+		attributes_tab->setButtonsEnabled(CustomTableWidget::AllButtons, !aux_rel->isProtected());
+		constraints_tab->setButtonsEnabled(CustomTableWidget::AllButtons, !aux_rel->isProtected());
 
 		//Lists the relationship attributes
 		listObjects(ObjectType::Column);
@@ -377,7 +375,6 @@ void RelationshipWidget::setAttributes(DatabaseModel *model, OperationList *op_l
 	pk_col_pattern_lbl->setEnabled(relnn);
 	pk_col_pattern_txt->setEnabled(relnn);
 
-	card_lbl->setVisible(rel1n);
 	table1_mand_chk->setEnabled(rel1n);
 	table1_mand_chk->setVisible(rel1n);
 	table2_mand_chk->setEnabled(rel_type==BaseRelationship::Relationship11);
@@ -544,7 +541,7 @@ void RelationshipWidget::generateBoundingExpr()
 
 void RelationshipWidget::listObjects(ObjectType obj_type)
 {
-	ObjectsTableWidget *tab=nullptr;
+	CustomTableWidget *tab=nullptr;
 	Relationship *rel=nullptr;
 	unsigned count, i;
 
@@ -569,7 +566,7 @@ void RelationshipWidget::listObjects(ObjectType obj_type)
 		tab->clearSelection();
 		tab->blockSignals(false);
 
-		constraints_tab->setButtonsEnabled(ObjectsTableWidget::AddButton,
+		constraints_tab->setButtonsEnabled(CustomTableWidget::AddButton,
 										   attributes_tab->getRowCount() > 0);
 	}
 	catch(Exception &e)
@@ -778,7 +775,7 @@ void RelationshipWidget::duplicateObject(int curr_row, int new_row)
 	BaseObject *object = nullptr, *dup_object = nullptr;
 	Relationship *rel = dynamic_cast<Relationship *>(this->object);
 	std::vector<TableObject *> obj_list;
-	ObjectsTableWidget *tab = nullptr;
+	CustomTableWidget *tab = nullptr;
 	int op_id = -1;
 
 	if(!rel)
@@ -861,7 +858,7 @@ void RelationshipWidget::editObject(int row)
 
 void RelationshipWidget::showObjectData(TableObject *object, int row)
 {
-	ObjectsTableWidget *tab=nullptr;
+	CustomTableWidget *tab=nullptr;
 
 	if(object->getObjectType()==ObjectType::Column)
 	{
